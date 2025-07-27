@@ -1,93 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Live Location Viewer</title>
+  <title>View Live Location</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
-  <!-- Styling -->
   <style>
     body {
-      margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #f2f2f2;
-      padding: 20px;
-      color: #333;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
+      text-align: center;
     }
-
     .container {
       max-width: 600px;
       margin: auto;
-      text-align: center;
+      padding: 20px;
     }
-
     h2 {
+      color: #333;
       margin-bottom: 20px;
-      color: #2196f3;
     }
-
-    input[type="text"] {
-      padding: 10px;
-      width: 70%;
-      max-width: 300px;
+    input, button, select {
+      width: calc(100% - 20px);
+      padding: 12px;
+      font-size: 16px;
+      margin: 10px 0;
       border: 1px solid #ccc;
       border-radius: 8px;
-      font-size: 16px;
     }
-
     button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #2196f3;
+      background-color: #2196F3;
       color: white;
       border: none;
-      border-radius: 8px;
-      margin-left: 10px;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
-
     button:hover {
-      background-color: #1976d2;
+      background-color: #1976D2;
     }
-
     #map {
       height: 400px;
       width: 100%;
-      margin-top: 20px;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-
-    .note {
+    #address {
+      margin-top: 15px;
+      font-size: 15px;
+      color: #444;
+      background: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .mode-toggle {
       margin-top: 10px;
+      text-align: right;
       font-size: 14px;
-      color: #888;
+      color: #555;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>📍 Track Friend's Live Location</h2>
+    <h2>📍 View Live Location</h2>
+    <input type="text" id="mobile" placeholder="Enter Mobile Number to Track" />
+    <button id="trackBtn">Start Tracking</button>
 
-    <input type="text" id="searchMobile" placeholder="Enter Mobile Number" />
-    <button onclick="startTracking()">Search</button>
-    <p class="note">Ask your friend to share live location via mobile number</p>
+    <div class="mode-toggle">
+      Map Mode:
+      <select id="mapType">
+        <option value="street">Street</option>
+        <option value="satellite">Satellite</option>
+      </select>
+    </div>
 
     <div id="map"></div>
+    <div id="address">📍 Address will appear here...</div>
   </div>
 
-  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  <!-- Firebase v8 -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-  <script>
-    // ✅ Firebase Config (your existing config)
     const firebaseConfig = {
       apiKey: "AIzaSyCxMU9PstROo2hYxwiAFsSacjJOSPCN6Ag",
       authDomain: "livelocationtracker-bcd3d.firebaseapp.com",
@@ -98,40 +96,67 @@
       appId: "1:800051113276:web:61f0162a9e95aba9cb4239"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    let map, marker;
+    let map, marker, currentLayer;
+    const tileLayers = {
+      street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }),
+      satellite: L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0','mt1','mt2','mt3'],
+        attribution: '&copy; Google Satellite'
+      })
+    };
 
-    function startTracking() {
-      const mobile = document.getElementById("searchMobile").value.trim();
-      if (!mobile) {
-        alert("Please enter a mobile number.");
-        return;
-      }
+    const addressDiv = document.getElementById("address");
 
-      db.ref("locations/" + mobile).on("value", (snapshot) => {
+    document.getElementById("trackBtn").addEventListener("click", () => {
+      const mobile = document.getElementById("mobile").value.trim();
+      if (!mobile) return alert("Please enter a mobile number to track.");
+
+      const locRef = ref(db, "locations/" + mobile);
+      onValue(locRef, (snapshot) => {
         const data = snapshot.val();
-        if (data && data.lat && data.lon) {
-          const lat = data.lat;
-          const lon = data.lon;
+        if (!data) return alert("No location found for this mobile number.");
 
-          if (!map) {
-            map = L.map('map').setView([lat, lon], 16);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
+        const lat = data.lat;
+        const lon = data.lon;
 
-            marker = L.marker([lat, lon]).addTo(map).bindPopup("Live Location").openPopup();
-          } else {
-            marker.setLatLng([lat, lon]);
-            map.setView([lat, lon]);
-          }
+        if (!map) {
+          map = L.map('map').setView([lat, lon], 15);
+          currentLayer = tileLayers.street.addTo(map);
+          marker = L.marker([lat, lon]).addTo(map).bindPopup("Tracked Location").openPopup();
         } else {
-          alert("No location found for this number yet.");
+          marker.setLatLng([lat, lon]);
+          map.setView([lat, lon]);
         }
+
+        // Show full address using Nominatim API
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+          .then(res => res.json())
+          .then(json => {
+            const addr = json.display_name || "Address not found";
+            addressDiv.innerHTML = `📍 <b>Address:</b> ${addr}`;
+          })
+          .catch(err => {
+            console.error("Reverse geocoding failed:", err);
+            addressDiv.textContent = "❌ Unable to fetch address.";
+          });
+
       });
-    }
+    });
+
+    document.getElementById("mapType").addEventListener("change", (e) => {
+      const selected = e.target.value;
+      if (map && currentLayer) {
+        map.removeLayer(currentLayer);
+        currentLayer = tileLayers[selected];
+        currentLayer.addTo(map);
+      }
+    });
   </script>
 </body>
 </html>
