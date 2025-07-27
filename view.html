@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Live Location Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <!-- Styling -->
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #2196f3;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 70%;
+      max-width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1976d2;
+    }
+
+    #map {
+      height: 400px;
+      width: 100%;
+      margin-top: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .note {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📍 Track Friend's Live Location</h2>
+
+    <input type="text" id="searchMobile" placeholder="Enter Mobile Number" />
+    <button onclick="startTracking()">Search</button>
+    <p class="note">Ask your friend to share live location via mobile number</p>
+
+    <div id="map"></div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- Firebase v8 -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <script>
+    // ✅ Firebase Config (your existing config)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCxMU9PstROo2hYxwiAFsSacjJOSPCN6Ag",
+      authDomain: "livelocationtracker-bcd3d.firebaseapp.com",
+      databaseURL: "https://livelocationtracker-bcd3d-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "livelocationtracker-bcd3d",
+      storageBucket: "livelocationtracker-bcd3d.appspot.com",
+      messagingSenderId: "800051113276",
+      appId: "1:800051113276:web:61f0162a9e95aba9cb4239"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let map, marker;
+
+    function startTracking() {
+      const mobile = document.getElementById("searchMobile").value.trim();
+      if (!mobile) {
+        alert("Please enter a mobile number.");
+        return;
+      }
+
+      db.ref("locations/" + mobile).on("value", (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.lat && data.lon) {
+          const lat = data.lat;
+          const lon = data.lon;
+
+          if (!map) {
+            map = L.map('map').setView([lat, lon], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            marker = L.marker([lat, lon]).addTo(map).bindPopup("Live Location").openPopup();
+          } else {
+            marker.setLatLng([lat, lon]);
+            map.setView([lat, lon]);
+          }
+        } else {
+          alert("No location found for this number yet.");
+        }
+      });
+    }
+  </script>
+</body>
+</html>
