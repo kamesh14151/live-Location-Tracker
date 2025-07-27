@@ -3,126 +3,146 @@
 <head>
   <title>Live Location Share</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
       text-align: center;
-      background: #f5f5f5;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
       padding: 20px;
     }
-    #map {
-      height: 400px;
-      width: 100%;
-      max-width: 600px;
-      margin: 20px auto;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
     }
-    input, button {
-      padding: 10px;
+    input, button, select {
+      width: calc(100% - 20px);
+      padding: 12px;
       font-size: 16px;
-      border-radius: 8px;
+      margin: 10px 0;
       border: 1px solid #ccc;
-      margin: 10px 5px;
+      border-radius: 8px;
     }
     button {
       background-color: #2196F3;
       color: white;
       border: none;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
     button:hover {
       background-color: #1976D2;
     }
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: 12px;
+      margin-top: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .mode-toggle {
+      margin-top: 10px;
+      text-align: right;
+      font-size: 14px;
+      color: #555;
+    }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h2>📍 Share Your Live Location</h2>
+    <input type="text" id="mobile" placeholder="Enter Mobile Number" />
+    <button id="startBtn">Start Sharing</button>
 
-<h2>📍 Share Your Live Location</h2>
-<input type="text" id="mobile" placeholder="Enter Mobile Number" />
-<button id="startBtn">Start Sharing</button>
+    <div class="mode-toggle">
+      Map Mode:
+      <select id="mapType">
+        <option value="street">Street</option>
+        <option value="satellite">Satellite</option>
+      </select>
+    </div>
 
-<div id="map"></div>
+    <div id="map"></div>
+  </div>
 
-<!-- Leaflet Map JS + CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-<!-- Firebase JS SDK -->
-<script type="module">
-  // Firebase imports
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCxMU9PstROo2hYxwiAFsSacjJOSPCN6Ag",
+      authDomain: "livelocationtracker-bcd3d.firebaseapp.com",
+      databaseURL: "https://livelocationtracker-bcd3d-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "livelocationtracker-bcd3d",
+      storageBucket: "livelocationtracker-bcd3d.appspot.com",
+      messagingSenderId: "800051113276",
+      appId: "1:800051113276:web:61f0162a9e95aba9cb4239"
+    };
 
-  // Firebase config
-  const firebaseConfig = {
-  apiKey: "AIzaSyCxMU9PstROo2hYxwiAFsSacjJOSPCN6Ag",
-  authDomain: "livelocationtracker-bcd3d.firebaseapp.com",
-  databaseURL: "https://livelocationtracker-bcd3d-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "livelocationtracker-bcd3d",
-  storageBucket: "livelocationtracker-bcd3d.firebasestorage.app",
-  messagingSenderId: "800051113276",
-  appId: "1:800051113276:web:61f0162a9e95aba9cb4239"
-};
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  let map, marker;
-
-  document.getElementById("startBtn").addEventListener("click", () => {
-    const mobile = document.getElementById("mobile").value.trim();
-
-    if (!mobile) {
-      alert("Please enter your mobile number.");
-      return;
-    }
-
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition((position) => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-
-      // Show map
-      map = L.map('map').setView([lat, lon], 15);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    let map, marker, currentLayer;
+    const tileLayers = {
+      street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
+      }),
+      satellite: L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0','mt1','mt2','mt3'],
+        attribution: '&copy; Google Satellite'
+      })
+    };
 
-      marker = L.marker([lat, lon]).addTo(map).bindPopup("You are here").openPopup();
-    });
+    document.getElementById("startBtn").addEventListener("click", () => {
+      const mobile = document.getElementById("mobile").value.trim();
+      if (!mobile) return alert("Please enter your mobile number.");
+      if (!navigator.geolocation) return alert("Geolocation not supported.");
 
-    // Update location every 5 seconds
-    setInterval(() => {
       navigator.geolocation.getCurrentPosition((pos) => {
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
 
-        update(ref(db, "locations/" + mobile), {
-          lat: lat,
-          lon: lon,
-          timestamp: Date.now()
-        });
+        // Initialize map
+        map = L.map('map').setView([lat, lon], 15);
+        currentLayer = tileLayers.street.addTo(map);
 
-        // Update marker position on map
-        if (marker && map) {
-          marker.setLatLng([lat, lon]);
-          map.setView([lat, lon]);
-        }
+        marker = L.marker([lat, lon]).addTo(map).bindPopup("You are here").openPopup();
 
-      }, (err) => {
-        console.error("Location error:", err);
-      }, {
-        enableHighAccuracy: true
-      });
-    }, 5000);
-  });
-</script>
+        // Start updating Firebase every 5s
+        setInterval(() => {
+          navigator.geolocation.getCurrentPosition((pos) => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
 
+            update(ref(db, "locations/" + mobile), {
+              lat, lon, timestamp: Date.now()
+            });
+
+            if (marker) {
+              marker.setLatLng([lat, lon]);
+              map.setView([lat, lon], map.getZoom(), { animate: true });
+            }
+          }, console.error, { enableHighAccuracy: true });
+        }, 5000);
+      }, console.error, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+    });
+
+    document.getElementById("mapType").addEventListener("change", (e) => {
+      const selected = e.target.value;
+      if (map && currentLayer) {
+        map.removeLayer(currentLayer);
+        currentLayer = tileLayers[selected];
+        currentLayer.addTo(map);
+      }
+    });
+  </script>
 </body>
 </html>
