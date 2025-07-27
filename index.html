@@ -1,11 +1,135 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Live Location Tracker</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Location Tracker | AJ STUDIOS</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .splash {
+      position: absolute;
+      top: 0; left: 0;
+      height: 100vh; width: 100vw;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeOut 2s ease-in-out forwards;
+      animation-delay: 2s;
+      z-index: 1000;
+    }
+
+    .splash img {
+      width: 120px;
+      animation: popIn 1s ease;
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    @keyframes popIn {
+      0% {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .container {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .logo {
+      width: 80px;
+      margin-bottom: 10px;
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #0d47a1;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      display: block;
+      margin: 15px auto;
+      padding: 15px 25px;
+      font-size: 18px;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      text-decoration: none;
+      width: 80%;
+      max-width: 300px;
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #0d47a1;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+      font-size: 14px;
+      color: #555;
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 22px;
+      }
+      .btn {
+        font-size: 16px;
+        padding: 12px 20px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>📍 Live Location Tracker</h1>
-  <p><a href="share.html">➡️ Share My Live Location</a></p>
-  <p><a href="view.html">🔍 View Friend's Location</a></p>
+  <!-- Splash screen -->
+  <div class="splash">
+    <img src="logo.jpg" alt="AJ Studios Logo" />
+  </div>
+
+  <!-- Main content -->
+  <div class="container">
+    <img src="logo.jpg" alt="AJ Studios Logo" class="logo" />
+    <h1>AJ STUDIOS<br />Live Location Tracker</h1>
+    <a href="share.html" class="btn">📤 Share My Live Location</a>
+    <a href="view.html" class="btn">🔍 View Friend's Location</a>
+  </div>
+
+  <footer>
+    Powered by <strong>AJ COMPANY</strong>
+  </footer>
 </body>
 </html>
