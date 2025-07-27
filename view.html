@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>View Live Location</title>
+  <title>Live Location Viewer - Satellite</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
@@ -12,16 +12,19 @@
       padding: 0;
       text-align: center;
     }
+
     .container {
       max-width: 600px;
       margin: auto;
       padding: 20px;
     }
+
     h2 {
-      color: #333;
-      margin-bottom: 20px;
+      color: #2c3e50;
+      margin-bottom: 15px;
     }
-    input, button, select {
+
+    input, button {
       width: calc(100% - 20px);
       padding: 12px;
       font-size: 16px;
@@ -29,62 +32,87 @@
       border: 1px solid #ccc;
       border-radius: 8px;
     }
+
     button {
-      background-color: #2196F3;
+      background-color: #27ae60;
       color: white;
       border: none;
       cursor: pointer;
-      transition: background 0.3s ease;
     }
+
     button:hover {
-      background-color: #1976D2;
+      background-color: #219150;
     }
+
     #map {
       height: 400px;
       width: 100%;
-      border-radius: 12px;
-      margin-top: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    #address {
-      margin-top: 15px;
-      font-size: 15px;
-      color: #444;
-      background: #fff;
-      padding: 10px;
       border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 20px;
     }
-    .mode-toggle {
+
+    #status {
+      font-size: 16px;
+      font-weight: bold;
       margin-top: 10px;
-      text-align: right;
+    }
+
+    #toggle {
+      background-color: #3498db;
+      margin-top: 10px;
+    }
+
+    .footer {
+      margin-top: 25px;
       font-size: 14px;
-      color: #555;
+      color: #888;
+    }
+
+    #loader {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .lds-dual-ring {
+      display: inline-block;
+      width: 64px;
+      height: 64px;
+    }
+
+    .lds-dual-ring:after {
+      content: " ";
+      display: block;
+      width: 46px;
+      height: 46px;
+      margin: 1px;
+      border-radius: 50%;
+      border: 5px solid #3498db;
+      border-color: #3498db transparent #3498db transparent;
+      animation: lds-dual-ring 1.2s linear infinite;
+    }
+
+    @keyframes lds-dual-ring {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>📍 View Live Location</h2>
-    <input type="text" id="mobile" placeholder="Enter Mobile Number to Track" />
-    <button id="trackBtn">Start Tracking</button>
-
-    <div class="mode-toggle">
-      Map Mode:
-      <select id="mapType">
-        <option value="street">Street</option>
-        <option value="satellite">Satellite</option>
-      </select>
-    </div>
-
+    <h2>🛰️ View Friend's Live Location (Satellite)</h2>
+    <input type="text" id="mobileInput" placeholder="Enter Mobile Number" />
+    <button id="viewBtn">View Location</button>
+    <button id="toggle">🌐 Toggle Map View</button>
+    <div id="loader" class="lds-dual-ring"></div>
+    <div id="status"></div>
     <div id="map"></div>
-    <div id="address">📍 Address will appear here...</div>
+    <div class="footer">🔰 AJ STUDIOS • Powered by AJ COMPANY</div>
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCxMU9PstROo2hYxwiAFsSacjJOSPCN6Ag",
@@ -99,64 +127,113 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let map, marker, currentLayer;
-    const tileLayers = {
-      street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-      }),
-      satellite: L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-        maxZoom: 20,
-        subdomains: ['mt0','mt1','mt2','mt3'],
-        attribution: '&copy; Google Satellite'
-      })
-    };
+    let map, marker;
+    let streetLayer, satelliteLayer;
+    let lastStatus = null;
 
-    const addressDiv = document.getElementById("address");
+    document.getElementById("viewBtn").addEventListener("click", () => {
+      const mobile = document.getElementById("mobileInput").value.trim();
+      if (!mobile) return alert("Please enter a mobile number.");
 
-    document.getElementById("trackBtn").addEventListener("click", () => {
-      const mobile = document.getElementById("mobile").value.trim();
-      if (!mobile) return alert("Please enter a mobile number to track.");
+      const userRef = ref(db, "locations/" + mobile);
+      const statusDiv = document.getElementById("status");
+      const loader = document.getElementById("loader");
+      const ONLINE_THRESHOLD = 10000;
 
-      const locRef = ref(db, "locations/" + mobile);
-      onValue(locRef, (snapshot) => {
-        const data = snapshot.val();
-        if (!data) return alert("No location found for this mobile number.");
+      loader.style.display = "block";
 
-        const lat = data.lat;
-        const lon = data.lon;
+      onValue(userRef, async (snapshot) => {
+        loader.style.display = "none";
 
-        if (!map) {
-          map = L.map('map').setView([lat, lon], 15);
-          currentLayer = tileLayers.street.addTo(map);
-          marker = L.marker([lat, lon]).addTo(map).bindPopup("Tracked Location").openPopup();
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const lat = data.lat;
+          const lon = data.lon;
+          const address = await getAddress(lat, lon);
+
+          if (!map) {
+            map = L.map("map").setView([lat, lon], 16);
+
+            streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: 'Map data © OpenStreetMap contributors'
+            });
+
+            satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+              attribution: 'Tiles © Esri & contributors'
+            });
+
+            satelliteLayer.addTo(map);
+
+            marker = L.marker([lat, lon]).addTo(map).bindPopup("📍 " + address).openPopup();
+          } else {
+            marker.setLatLng([lat, lon]);
+            marker.setPopupContent("📍 " + address);
+            map.setView([lat, lon], map.getZoom());
+          }
         } else {
-          marker.setLatLng([lat, lon]);
-          map.setView([lat, lon]);
+          alert("❌ No live location shared yet by this number.");
         }
-
-        // Show full address using Nominatim API
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
-          .then(res => res.json())
-          .then(json => {
-            const addr = json.display_name || "Address not found";
-            addressDiv.innerHTML = `📍 <b>Address:</b> ${addr}`;
-          })
-          .catch(err => {
-            console.error("Reverse geocoding failed:", err);
-            addressDiv.textContent = "❌ Unable to fetch address.";
-          });
-
       });
+
+      function speak(text) {
+        const msg = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(msg);
+      }
+
+      function updateStatus() {
+        get(userRef).then((snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            const lastSeen = data.timestamp;
+            const now = Date.now();
+
+            if (now - lastSeen < ONLINE_THRESHOLD) {
+              statusDiv.textContent = "🟢 Online";
+              statusDiv.style.color = "green";
+              if (lastStatus !== "online") {
+                speak("User is online");
+                lastStatus = "online";
+              }
+            } else {
+              const time = new Date(lastSeen).toLocaleTimeString();
+              statusDiv.textContent = "🔴 Last seen: " + time;
+              statusDiv.style.color = "red";
+              if (lastStatus !== "offline") {
+                speak("User went offline");
+                lastStatus = "offline";
+              }
+            }
+          } else {
+            statusDiv.textContent = "❌ No location found";
+            statusDiv.style.color = "gray";
+          }
+        });
+      }
+
+      updateStatus();
+      setInterval(updateStatus, 5000);
     });
 
-    document.getElementById("mapType").addEventListener("change", (e) => {
-      const selected = e.target.value;
-      if (map && currentLayer) {
-        map.removeLayer(currentLayer);
-        currentLayer = tileLayers[selected];
-        currentLayer.addTo(map);
+    document.getElementById("toggle").addEventListener("click", () => {
+      if (!map) return;
+      if (map.hasLayer(satelliteLayer)) {
+        map.removeLayer(satelliteLayer);
+        map.addLayer(streetLayer);
+      } else {
+        map.removeLayer(streetLayer);
+        map.addLayer(satelliteLayer);
       }
     });
+
+    async function getAddress(lat, lon) {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+        const data = await res.json();
+        return data.display_name || "Unknown Address";
+      } catch (e) {
+        return "Address unavailable";
+      }
+    }
   </script>
 </body>
 </html>
