@@ -1,100 +1,123 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html lang="en">
 <head>
-  <title>Live Location Viewer - Satellite</title>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Location Viewer - Smooth Fly</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f2f5;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #e0eafc, #cfdef3);
       margin: 0;
       padding: 0;
       text-align: center;
-    }
+    }.container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
 
-    .container {
-      max-width: 600px;
-      margin: auto;
-      padding: 20px;
-    }
+h2 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
 
-    h2 {
-      color: #2c3e50;
-      margin-bottom: 15px;
-    }
+input, button {
+  width: calc(100% - 20px);
+  padding: 12px;
+  font-size: 16px;
+  margin: 10px 0;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+}
 
-    input, button {
-      width: calc(100% - 20px);
-      padding: 12px;
-      font-size: 16px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
+button {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
 
-    button {
-      background-color: #27ae60;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+button:hover {
+  background-color: #219150;
+  transform: translateY(-2px);
+}
 
-    button:hover {
-      background-color: #219150;
-    }
+#toggle {
+  background-color: #3498db;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
+}
 
-    #map {
-      height: 400px;
-      width: 100%;
-      border-radius: 10px;
-      margin-top: 20px;
-    }
+#toggle:hover {
+  background-color: #2d83c7;
+}
 
-    #status {
-      font-size: 16px;
-      font-weight: bold;
-      margin-top: 10px;
-    }
+#map {
+  height: 400px;
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 1s ease;
+}
 
-    #toggle {
-      background-color: #3498db;
-      margin-top: 10px;
-    }
+#map.loaded {
+  opacity: 1;
+}
 
-    .footer {
-      margin-top: 25px;
-      font-size: 14px;
-      color: #888;
-    }
+#status {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 10px;
+}
 
-    #loader {
-      display: none;
-      margin-top: 10px;
-    }
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
 
-    .lds-dual-ring {
-      display: inline-block;
-      width: 64px;
-      height: 64px;
-    }
+#status.pulse {
+  animation: pulse 0.4s ease;
+}
 
-    .lds-dual-ring:after {
-      content: " ";
-      display: block;
-      width: 46px;
-      height: 46px;
-      margin: 1px;
-      border-radius: 50%;
-      border: 5px solid #3498db;
-      border-color: #3498db transparent #3498db transparent;
-      animation: lds-dual-ring 1.2s linear infinite;
-    }
+.footer {
+  margin-top: 25px;
+  font-size: 14px;
+  color: #888;
+}
 
-    @keyframes lds-dual-ring {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+#loader {
+  display: none;
+  margin: 20px auto;
+}
+
+.lds-dual-ring {
+  display: inline-block;
+  width: 64px;
+  height: 64px;
+}
+
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 46px;
+  height: 46px;
+  margin: 1px;
+  border-radius: 50%;
+  border: 5px solid #3498db;
+  border-color: #3498db transparent #3498db transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+
   </style>
 </head>
 <body>
@@ -107,10 +130,7 @@
     <div id="status"></div>
     <div id="map"></div>
     <div class="footer">🔰 AJ STUDIOS • Powered by AJ COMPANY</div>
-  </div>
-
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script type="module">
+  </div>  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
@@ -127,8 +147,19 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let map, marker;
-    let streetLayer, satelliteLayer;
+    let map = L.map("map").setView([20, 0], 2); // 🌍 Initial world view
+
+    let streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data © OpenStreetMap contributors'
+    });
+
+    let satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri & contributors'
+    });
+
+    satelliteLayer.addTo(map);
+
+    let marker;
     let lastStatus = null;
 
     document.getElementById("viewBtn").addEventListener("click", () => {
@@ -151,25 +182,20 @@
           const lon = data.lon;
           const address = await getAddress(lat, lon);
 
-          if (!map) {
-            map = L.map("map").setView([lat, lon], 16);
-
-            streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              attribution: 'Map data © OpenStreetMap contributors'
-            });
-
-            satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-              attribution: 'Tiles © Esri & contributors'
-            });
-
-            satelliteLayer.addTo(map);
-
+          if (!marker) {
             marker = L.marker([lat, lon]).addTo(map).bindPopup("📍 " + address).openPopup();
           } else {
             marker.setLatLng([lat, lon]);
             marker.setPopupContent("📍 " + address);
-            map.setView([lat, lon], map.getZoom());
           }
+
+          map.flyTo([lat, lon], 16, {
+            animate: true,
+            duration: 4
+          });
+
+          document.getElementById("map").classList.add("loaded");
+
         } else {
           alert("❌ No live location shared yet by this number.");
         }
@@ -190,6 +216,8 @@
             if (now - lastSeen < ONLINE_THRESHOLD) {
               statusDiv.textContent = "🟢 Online";
               statusDiv.style.color = "green";
+              statusDiv.classList.add("pulse");
+              setTimeout(() => statusDiv.classList.remove("pulse"), 400);
               if (lastStatus !== "online") {
                 speak("User is online");
                 lastStatus = "online";
@@ -198,6 +226,8 @@
               const time = new Date(lastSeen).toLocaleTimeString();
               statusDiv.textContent = "🔴 Last seen: " + time;
               statusDiv.style.color = "red";
+              statusDiv.classList.add("pulse");
+              setTimeout(() => statusDiv.classList.remove("pulse"), 400);
               if (lastStatus !== "offline") {
                 speak("User went offline");
                 lastStatus = "offline";
@@ -215,7 +245,6 @@
     });
 
     document.getElementById("toggle").addEventListener("click", () => {
-      if (!map) return;
       if (map.hasLayer(satelliteLayer)) {
         map.removeLayer(satelliteLayer);
         map.addLayer(streetLayer);
@@ -234,6 +263,5 @@
         return "Address unavailable";
       }
     }
-  </script>
-</body>
+  </script></body>
 </html>
