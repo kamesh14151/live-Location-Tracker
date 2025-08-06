@@ -7,6 +7,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #e0eafc, #cfdef3);
@@ -17,7 +20,7 @@
     .container {
       max-width: 600px;
       margin: 40px auto;
-      padding: 30px;
+      padding: 30px 20px;
       background: #fff;
       border-radius: 16px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.1);
@@ -26,9 +29,10 @@
       color: #2c3e50;
       margin-bottom: 15px;
       font-weight: 600;
+      font-size: 20px;
     }
     input, button {
-      width: calc(100% - 20px);
+      width: 100%;
       padding: 12px;
       font-size: 16px;
       margin: 10px 0;
@@ -49,7 +53,6 @@
     #toggle {
       background-color: #3498db;
       margin-top: 10px;
-      transition: background-color 0.3s ease;
     }
     #toggle:hover {
       background-color: #2d83c7;
@@ -112,6 +115,27 @@
       padding: 10px;
       border-radius: 8px;
     }
+    #ip-section {
+      display: none;
+      margin-top: 15px;
+    }
+
+    /* Mobile responsive tweaks */
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px 15px;
+      }
+      h2 {
+        font-size: 18px;
+      }
+      input, button {
+        font-size: 15px;
+        padding: 10px;
+      }
+      #ip-info {
+        font-size: 13px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -121,13 +145,17 @@
     <button id="viewBtn">View Location</button>
     <button id="fetchDetailsBtn">FETCH DETAILS</button>
     <button id="toggle">🌐 Toggle Map View</button>
+
     <div id="loader" class="lds-dual-ring"></div>
     <div id="status"></div>
+
     <div id="map"></div>
-   <div id="ip-section" style="display:none;">
-  <h3 id="fetched-heading" style="margin-bottom: 5px; color: #2c3e50;">FETCHED DETAILS</h3>
-  <div id="ip-info">Fetching your IP details...</div>
-</div>
+
+    <div id="ip-section">
+      <h3 style="margin-bottom: 5px; color: #2c3e50;">FETCHED DETAILS</h3>
+      <div id="ip-info">Fetching your IP details...</div>
+    </div>
+
     <div class="footer">🔰 AJ STUDIOS • Powered by AJ COMPANY</div>
   </div>
 
@@ -257,38 +285,27 @@
       }
     }
 
-    // 👇 IP Address Fetch & Display
-    fetch("https://ipapi.co/json/")
-  .then(res => res.json())
-  .then(data => {
-    const info = `🌐 IP: ${data.ip} • City: ${data.city} • Region: ${data.region} • Country: ${data.country_name}`;
-    document.getElementById("ip-info").textContent = info;
-  })
-  .catch(() => {
-    document.getElementById("ip-info").textContent = "⚠ Could not load IP info.";
-  });
+    // IP Details Button
+    document.getElementById("fetchDetailsBtn").addEventListener("click", () => {
+      const ipSection = document.getElementById("ip-section");
+      const ipInfo = document.getElementById("ip-info");
+      const fetchBtn = document.getElementById("fetchDetailsBtn");
 
-   document.getElementById("fetchDetailsBtn").addEventListener("click", () => {
-  const ipSection = document.getElementById("ip-section");
-  const ipInfo = document.getElementById("ip-info");
-  const fetchBtn = document.getElementById("fetchDetailsBtn");
+      fetchBtn.textContent = "FETCHED DETAILS";
+      ipSection.style.display = "block";
+      ipInfo.textContent = "Fetching your IP details...";
 
-  fetchBtn.textContent = "FETCHED DETAILS";
-  ipSection.style.display = "block";
-  ipInfo.textContent = "Fetching your IP details...";
-
-  fetch("https://ipapi.co/json/")
-    .then(res => res.json())
-    .then(data => {
-      const info = `🌐 IP: ${data.ip} • ${data.city}, ${data.region}, ${data.region_code}, ${data.country_name} • ISP: ${data.org}`;
-      ipInfo.textContent = info;
-    })
-    .catch(() => {
-      ipInfo.textContent = "⚠ Could not load IP info.";
+      fetch("https://ipapi.co/json/")
+        .then(res => res.json())
+        .then(data => {
+          const info = `🌐 IP: ${data.ip} • ${data.city}, ${data.region}, ${data.country_name} • ISP: ${data.org}`;
+          ipInfo.textContent = info;
+        })
+        .catch(() => {
+          ipInfo.textContent = "⚠ Could not load IP info.";
+        });
     });
-});
-
-
   </script>
 </body>
 </html>
+
