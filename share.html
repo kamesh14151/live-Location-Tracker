@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Share Location - AJ Studios</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -64,6 +64,30 @@
       margin-top: 20px;
       border-radius: 12px;
     }
+    .loader {
+      display: none;
+      text-align: center;
+      margin: 15px 0;
+    }
+    .loader span {
+      display: inline-block;
+      width: 20px; height: 20px;
+      border: 3px solid #0d47a1;
+      border-top: 3px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    .shared-msg {
+      display: none;
+      color: green;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -75,6 +99,8 @@
     <h2>📡 Share Your Live Location</h2>
     <input type="text" id="mobile" placeholder="Enter Mobile Number" />
     <button id="startBtn">Start Sharing</button>
+    <div class="loader" id="loader"><span></span></div>
+    <div class="shared-msg" id="sharedMsg">✅ Location Shared Successfully</div>
     <div class="mode-toggle">
       Map Mode:
       <select id="mapType">
@@ -117,8 +143,13 @@
 
     document.getElementById("startBtn").addEventListener("click", () => {
       const mobile = document.getElementById("mobile").value.trim();
+      const loader = document.getElementById("loader");
+      const sharedMsg = document.getElementById("sharedMsg");
+
       if (!mobile) return alert("Please enter your mobile number.");
       if (!navigator.geolocation) return alert("Geolocation not supported.");
+
+      loader.style.display = "block"; // Show loader
 
       navigator.geolocation.getCurrentPosition((pos) => {
         const lat = pos.coords.latitude;
@@ -128,7 +159,6 @@
         currentLayer = tileLayers.street.addTo(map);
         marker = L.marker([lat, lon]).addTo(map).bindPopup("You are here").openPopup();
 
-        // 🔻 Fetch IP + location and update to Firebase
         fetch("https://ipapi.co/json")
           .then(response => response.json())
           .then(data => {
@@ -141,6 +171,9 @@
               country: data.country_name,
               timestamp: Date.now()
             });
+
+            loader.style.display = "none";        // Hide loader
+            sharedMsg.style.display = "block";    // Show shared message
           });
 
         // 🔁 Update every 5 seconds
@@ -161,6 +194,7 @@
             }
           }, console.error, { enableHighAccuracy: true });
         }, 5000);
+
       }, console.error, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
     });
 
@@ -175,3 +209,5 @@
   </script>
 </body>
 </html>
+
+         
