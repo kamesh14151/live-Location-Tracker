@@ -1,7 +1,8 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Live Location Viewer - Smooth Fly</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -12,125 +13,126 @@
       margin: 0;
       padding: 0;
       text-align: center;
-    }.container {
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 30px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-}
-
-h2 {
-  color: #2c3e50;
-  margin-bottom: 15px;
-  font-weight: 600;
-}
-
-input, button {
-  width: calc(100% - 20px);
-  padding: 12px;
-  font-size: 16px;
-  margin: 10px 0;
-  border: 1px solid #bbb;
-  border-radius: 8px;
-}
-
-button {
-  background-color: #27ae60;
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-button:hover {
-  background-color: #219150;
-  transform: translateY(-2px);
-}
-
-#toggle {
-  background-color: #3498db;
-  margin-top: 10px;
-  transition: background-color 0.3s ease;
-}
-
-#toggle:hover {
-  background-color: #2d83c7;
-}
-
-#map {
-  height: 400px;
-  width: 100%;
-  border-radius: 10px;
-  margin-top: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  opacity: 0;
-  transition: opacity 1s ease;
-}
-
-#map.loaded {
-  opacity: 1;
-}
-
-#status {
-  font-size: 16px;
-  font-weight: bold;
-  margin-top: 10px;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-#status.pulse {
-  animation: pulse 0.4s ease;
-}
-
-.footer {
-  margin-top: 25px;
-  font-size: 14px;
-  color: #888;
-}
-
-#loader {
-  display: none;
-  margin: 20px auto;
-}
-
-.lds-dual-ring {
-  display: inline-block;
-  width: 64px;
-  height: 64px;
-}
-
-.lds-dual-ring:after {
-  content: " ";
-  display: block;
-  width: 46px;
-  height: 46px;
-  margin: 1px;
-  border-radius: 50%;
-  border: 5px solid #3498db;
-  border-color: #3498db transparent #3498db transparent;
-  animation: lds-dual-ring 1.2s linear infinite;
-}
-
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    input, button {
+      width: calc(100% - 20px);
+      padding: 12px;
+      font-size: 16px;
+      margin: 10px 0;
+      border: 1px solid #bbb;
+      border-radius: 8px;
+    }
+    button {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    button:hover {
+      background-color: #219150;
+      transform: translateY(-2px);
+    }
+    #toggle {
+      background-color: #3498db;
+      margin-top: 10px;
+      transition: background-color 0.3s ease;
+    }
+    #toggle:hover {
+      background-color: #2d83c7;
+    }
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: 10px;
+      margin-top: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    #map.loaded {
+      opacity: 1;
+    }
+    #status {
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    #status.pulse {
+      animation: pulse 0.4s ease;
+    }
+    .footer {
+      margin-top: 25px;
+      font-size: 14px;
+      color: #888;
+    }
+    #loader {
+      display: none;
+      margin: 20px auto;
+    }
+    .lds-dual-ring {
+      display: inline-block;
+      width: 64px;
+      height: 64px;
+    }
+    .lds-dual-ring:after {
+      content: " ";
+      display: block;
+      width: 46px;
+      height: 46px;
+      margin: 1px;
+      border-radius: 50%;
+      border: 5px solid #3498db;
+      border-color: #3498db transparent #3498db transparent;
+      animation: lds-dual-ring 1.2s linear infinite;
+    }
+    #ip-info {
+      font-size: 14px;
+      margin-top: 10px;
+      color: #555;
+      background: #f4f4f4;
+      padding: 10px;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>🛰️ View Friend's Live Location</h2>
+    <h2>🛰 View Friend's Live Location</h2>
     <input type="text" id="mobileInput" placeholder="Enter Mobile Number" />
     <button id="viewBtn">View Location</button>
+    <button id="fetchDetailsBtn">FETCH DETAILS</button>
     <button id="toggle">🌐 Toggle Map View</button>
     <div id="loader" class="lds-dual-ring"></div>
     <div id="status"></div>
     <div id="map"></div>
+   <div id="ip-section" style="display:none;">
+  <h3 id="fetched-heading" style="margin-bottom: 5px; color: #2c3e50;">FETCHED DETAILS</h3>
+  <div id="ip-info">Fetching your IP details...</div>
+</div>
     <div class="footer">🔰 AJ STUDIOS • Powered by AJ COMPANY</div>
-  </div>  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>  <script type="module">
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
@@ -147,97 +149,92 @@ button:hover {
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let map = L.map("map").setView([20, 0], 2); // 🌍 Initial world view
-
+    let map = L.map("map").setView([20, 0], 2);
     let streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: 'Map data © OpenStreetMap contributors'
     });
-
     let satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles © Esri & contributors'
     });
 
     satelliteLayer.addTo(map);
-
-    let marker;
+    let currentLayer = satelliteLayer;
+    let marker = null;
     let lastStatus = null;
 
     document.getElementById("viewBtn").addEventListener("click", () => {
       const mobile = document.getElementById("mobileInput").value.trim();
+      const statusDiv = document.getElementById("status");
+      const loader = document.getElementById("loader");
       if (!mobile) return alert("Please enter a mobile number.");
 
       const userRef = ref(db, "locations/" + mobile);
-      const statusDiv = document.getElementById("status");
-      const loader = document.getElementById("loader");
-      const ONLINE_THRESHOLD = 10000;
-
       loader.style.display = "block";
 
       onValue(userRef, async (snapshot) => {
         loader.style.display = "none";
 
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const lat = data.lat;
-          const lon = data.lon;
-          const address = await getAddress(lat, lon);
-
-          if (!marker) {
-            marker = L.marker([lat, lon]).addTo(map).bindPopup("📍 " + address).openPopup();
-          } else {
-            marker.setLatLng([lat, lon]);
-            marker.setPopupContent("📍 " + address);
-          }
-
-          map.flyTo([lat, lon], 16, {
-            animate: true,
-            duration: 4
-          });
-
-          document.getElementById("map").classList.add("loaded");
-
-        } else {
+        if (!snapshot.exists()) {
           alert("❌ No live location shared yet by this number.");
+          return;
         }
-      });
 
-      function speak(text) {
-        const msg = new SpeechSynthesisUtterance(text);
-        window.speechSynthesis.speak(msg);
-      }
+        const data = snapshot.val();
+        const { lat, lon } = data;
+        const address = await getAddress(lat, lon);
+
+        if (!marker) {
+          marker = L.marker([lat, lon]).addTo(map).bindPopup("📍 " + address).openPopup();
+        } else {
+          marker.setLatLng([lat, lon]);
+          marker.setPopupContent("📍 " + address);
+        }
+
+        map.flyTo([lat, lon], 16, { animate: true, duration: 3 });
+        document.getElementById("map").classList.add("loaded");
+      });
 
       function updateStatus() {
         get(userRef).then((snapshot) => {
-          if (snapshot.exists()) {
-            const data = snapshot.val();
-            const lastSeen = data.timestamp;
-            const now = Date.now();
-
-            if (now - lastSeen < ONLINE_THRESHOLD) {
-              statusDiv.textContent = "🟢 Online";
-              statusDiv.style.color = "green";
-              statusDiv.classList.add("pulse");
-              setTimeout(() => statusDiv.classList.remove("pulse"), 400);
-              if (lastStatus !== "online") {
-                speak("User is online");
-                lastStatus = "online";
-              }
-            } else {
-              const time = new Date(lastSeen).toLocaleTimeString();
-              statusDiv.textContent = "🔴 Last seen: " + time;
-              statusDiv.style.color = "red";
-              statusDiv.classList.add("pulse");
-              setTimeout(() => statusDiv.classList.remove("pulse"), 400);
-              if (lastStatus !== "offline") {
-                speak("User went offline");
-                lastStatus = "offline";
-              }
-            }
-          } else {
+          if (!snapshot.exists()) {
             statusDiv.textContent = "❌ No location found";
             statusDiv.style.color = "gray";
+            return;
+          }
+
+          const data = snapshot.val();
+          const lastSeen = data.timestamp;
+          const now = Date.now();
+          const ONLINE_THRESHOLD = 10000;
+
+          if (now - lastSeen < ONLINE_THRESHOLD) {
+            statusDiv.textContent = "🟢 Online";
+            statusDiv.style.color = "green";
+            triggerPulse();
+            speak("User is online");
+            lastStatus = "online";
+          } else {
+            const time = new Date(lastSeen).toLocaleTimeString();
+            statusDiv.textContent = "🔴 Last seen: " + time;
+            statusDiv.style.color = "red";
+            triggerPulse();
+            speak("User went offline");
+            lastStatus = "offline";
           }
         });
+      }
+
+      function triggerPulse() {
+        const el = document.getElementById("status");
+        el.classList.add("pulse");
+        setTimeout(() => el.classList.remove("pulse"), 500);
+      }
+
+      function speak(text) {
+        if ('speechSynthesis' in window) {
+          const msg = new SpeechSynthesisUtterance(text);
+          window.speechSynthesis.speak(msg);
+        }
       }
 
       updateStatus();
@@ -245,13 +242,9 @@ button:hover {
     });
 
     document.getElementById("toggle").addEventListener("click", () => {
-      if (map.hasLayer(satelliteLayer)) {
-        map.removeLayer(satelliteLayer);
-        map.addLayer(streetLayer);
-      } else {
-        map.removeLayer(streetLayer);
-        map.addLayer(satelliteLayer);
-      }
+      map.removeLayer(currentLayer);
+      currentLayer = currentLayer === streetLayer ? satelliteLayer : streetLayer;
+      currentLayer.addTo(map);
     });
 
     async function getAddress(lat, lon) {
@@ -259,9 +252,43 @@ button:hover {
         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
         const data = await res.json();
         return data.display_name || "Unknown Address";
-      } catch (e) {
+      } catch {
         return "Address unavailable";
       }
     }
-  </script></body>
+
+    // 👇 IP Address Fetch & Display
+    fetch("https://ipapi.co/json/")
+  .then(res => res.json())
+  .then(data => {
+    const info = `🌐 IP: ${data.ip} • City: ${data.city} • Region: ${data.region} • Country: ${data.country_name}`;
+    document.getElementById("ip-info").textContent = info;
+  })
+  .catch(() => {
+    document.getElementById("ip-info").textContent = "⚠ Could not load IP info.";
+  });
+
+   document.getElementById("fetchDetailsBtn").addEventListener("click", () => {
+  const ipSection = document.getElementById("ip-section");
+  const ipInfo = document.getElementById("ip-info");
+  const fetchBtn = document.getElementById("fetchDetailsBtn");
+
+  fetchBtn.textContent = "FETCHED DETAILS";
+  ipSection.style.display = "block";
+  ipInfo.textContent = "Fetching your IP details...";
+
+  fetch("https://ipapi.co/json/")
+    .then(res => res.json())
+    .then(data => {
+      const info = `🌐 IP: ${data.ip} • ${data.city}, ${data.region}, ${data.region_code}, ${data.country_name} • ISP: ${data.org}`;
+      ipInfo.textContent = info;
+    })
+    .catch(() => {
+      ipInfo.textContent = "⚠ Could not load IP info.";
+    });
+});
+
+
+  </script>
+</body>
 </html>
