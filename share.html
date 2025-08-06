@@ -7,41 +7,57 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, #f0f2f5, #ffffff);
-      display: flex; flex-direction: column; align-items: center;
-      padding: 20px; min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      min-height: 100vh;
     }
+
     .branding {
       text-align: center;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
+
     .branding h1 {
-      font-size: 24px; color: #0d47a1;
+      font-size: 26px;
+      color: #0d47a1;
     }
+
     .branding p {
-      font-size: 14px; color: #555;
+      font-size: 14px;
+      color: #555;
     }
+
     .card {
       background: #fff;
-      max-width: 500px;
+      max-width: 600px;
       width: 100%;
-      padding: 20px;
+      padding: 25px;
       border-radius: 20px;
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
     }
+
     h2 {
-      color: #333; margin-bottom: 20px;
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 20px;
+      text-align: center;
     }
+
     input, button, select {
       width: 100%;
-      padding: 14px;
+      padding: 15px;
       font-size: 16px;
       margin: 10px 0;
       border-radius: 12px;
       border: 1px solid #ccc;
     }
+
     button {
       background-color: #0d47a1;
       color: white;
@@ -49,44 +65,72 @@
       cursor: pointer;
       font-weight: bold;
     }
+
     button:hover {
       background-color: #1565c0;
     }
+
     .mode-toggle {
       margin-top: 10px;
       font-size: 14px;
       color: #555;
       text-align: left;
     }
+
     #map {
       height: 400px;
       width: 100%;
       margin-top: 20px;
       border-radius: 12px;
     }
+
     .loader {
       display: none;
       text-align: center;
       margin: 15px 0;
     }
+
     .loader span {
       display: inline-block;
-      width: 20px; height: 20px;
-      border: 3px solid #0d47a1;
-      border-top: 3px solid transparent;
+      width: 24px;
+      height: 24px;
+      border: 4px solid #0d47a1;
+      border-top: 4px solid transparent;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
+
     @keyframes spin {
       0% { transform: rotate(0deg);}
       100% { transform: rotate(360deg);}
     }
+
     .shared-msg {
       display: none;
       color: green;
       font-weight: bold;
       text-align: center;
       margin-top: 10px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+      .card {
+        padding: 15px;
+      }
+
+      h2 {
+        font-size: 18px;
+      }
+
+      input, button, select {
+        font-size: 15px;
+        padding: 12px;
+      }
+
+      #map {
+        height: 300px;
+      }
     }
   </style>
 </head>
@@ -95,12 +139,15 @@
     <h1>🔰 AJ STUDIOS</h1>
     <p>Powered by AJ COMPANY</p>
   </div>
+
   <div class="card">
     <h2>📡 Share Your Live Location</h2>
     <input type="text" id="mobile" placeholder="Enter Mobile Number" />
     <button id="startBtn">Start Sharing</button>
+
     <div class="loader" id="loader"><span></span></div>
     <div class="shared-msg" id="sharedMsg">✅ Location Shared Successfully</div>
+
     <div class="mode-toggle">
       Map Mode:
       <select id="mapType">
@@ -108,6 +155,7 @@
         <option value="satellite">Satellite view Map</option>
       </select>
     </div>
+
     <div id="map"></div>
   </div>
 
@@ -149,7 +197,7 @@
       if (!mobile) return alert("Please enter your mobile number.");
       if (!navigator.geolocation) return alert("Geolocation not supported.");
 
-      loader.style.display = "block"; // Show loader
+      loader.style.display = "block";
 
       navigator.geolocation.getCurrentPosition((pos) => {
         const lat = pos.coords.latitude;
@@ -172,11 +220,10 @@
               timestamp: Date.now()
             });
 
-            loader.style.display = "none";        // Hide loader
-            sharedMsg.style.display = "block";    // Show shared message
+            loader.style.display = "none";
+            sharedMsg.style.display = "block";
           });
 
-        // 🔁 Update every 5 seconds
         setInterval(() => {
           navigator.geolocation.getCurrentPosition((pos) => {
             const lat = pos.coords.latitude;
